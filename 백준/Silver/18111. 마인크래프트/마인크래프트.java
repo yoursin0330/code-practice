@@ -1,61 +1,56 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 public class Main {
-    public void solution() throws Exception {
+    public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
-        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
-        int b = Integer.parseInt(st.nextToken());
         
-        int[][] land = new int[n][m];
-        int minHeight = 256, maxHeight = 0;
-        
-        // 입력 받기 및 최소, 최대 높이 찾기
-        for (int i = 0; i < n; i++) {
+        int N = Integer.parseInt(st.nextToken());
+        int M = Integer.parseInt(st.nextToken());
+        int B = Integer.parseInt(st.nextToken());
+
+        int[] count = new int[257]; // 높이별 블록 개수 저장 (0~256)
+        int minH = 256, maxH = 0; // 최소, 최대 높이 저장
+        int totalBlocks = B; // 인벤토리 포함 총 블록 개수
+
+        // 높이 개수 카운팅
+        for (int i = 0; i < N; i++) {
             st = new StringTokenizer(br.readLine());
-            for (int j = 0; j < m; j++) {
-                land[i][j] = Integer.parseInt(st.nextToken());
-                minHeight = Math.min(minHeight, land[i][j]);
-                maxHeight = Math.max(maxHeight, land[i][j]);
+            for (int j = 0; j < M; j++) {
+                int h = Integer.parseInt(st.nextToken());
+                count[h]++;
+                minH = Math.min(minH, h);
+                maxH = Math.max(maxH, h);
+                totalBlocks += h;
             }
         }
 
         int minTime = Integer.MAX_VALUE;
-        int bestHeight = minHeight; // 최소 높이부터 시작
+        int bestHeight = minH;
 
-        // 가능한 모든 높이에 대해 시간 계산
-        for (int h = minHeight; h <= maxHeight; h++) {
+        // 가능한 모든 높이 탐색
+        for (int h = minH; h <= maxH; h++) {
             int removeBlocks = 0, addBlocks = 0;
-            
-            // 높이 조정 작업 수행
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
-                    if (land[i][j] > h) {
-                        removeBlocks += land[i][j] - h; // 블록 제거
-                    } else if (land[i][j] < h) {
-                        addBlocks += h - land[i][j]; // 블록 추가
-                    }
+
+            for (int i = 0; i <= 256; i++) {
+                if (count[i] > 0) {
+                    if (i > h) removeBlocks += (i - h) * count[i]; // 블록 제거
+                    else if (i < h) addBlocks += (h - i) * count[i]; // 블록 추가
                 }
             }
-            
-            // 인벤토리에 블록이 충분한지 확인
-            if (removeBlocks + b >= addBlocks) {
-                int time = removeBlocks * 2 + addBlocks; // 제거는 2초, 추가는 1초
-                
-                // 최소 시간 갱신 + 높이가 같다면 더 높은 높이 선택
-                if (time < minTime || (time == minTime && h > bestHeight)) {
+
+            if (removeBlocks + B >= addBlocks) { // 인벤토리로 만들 수 있는 경우
+                int time = removeBlocks * 2 + addBlocks;
+                if (time < minTime) {
                     minTime = time;
                     bestHeight = h;
+                } else if (time == minTime) {
+                    bestHeight = Math.max(bestHeight, h); // 높이가 높을수록 우선
                 }
             }
         }
 
         System.out.println(minTime + " " + bestHeight);
-    }
-
-    public static void main(String[] args) throws Exception {
-        new Main().solution();
     }
 }
