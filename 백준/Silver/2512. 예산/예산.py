@@ -1,9 +1,7 @@
 n = int(input())
 budget = list(map(int, input().split()))
 total = int(input())
-budget.sort()
-
-left, right = 0, budget[-1]
+left, right = 0, max(budget)
 ans=0
 while left<=right:
     mid = (left+right)//2
